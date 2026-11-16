@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUSH — Anonim İtiraf ve Geçici Mesajlaşma</title>
+    <meta name="description" content="HUSH: Yakınındakilerin anonim itiraflarını keşfet, 12 saatte otomatik silinen gizli sohbetler başlat.">
+    <style>
+        :root {
+            --bg-primary: #0B0B0E;
+            --bg-card: #141419;
+            --bg-card-hover: #1B1B22;
+            --accent: #FFA500;
+            --accent-soft: rgba(255, 165, 0, 0.12);
+            --text-primary: #F5F5F7;
+            --text-secondary: #9E9EA8;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Üst Navigasyon */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 11, 14, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo span {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        nav {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero / Tanıtım Bölümü */
+        .hero {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 72px 20px 56px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 18px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            max-width: 620px;
+            margin: 0 auto 32px;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            transition: border-color 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255, 165, 0, 0.35);
+        }
+
+        .feature-card h3 {
+            color: var(--accent);
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin: 0;
+        }
+
+        /* İçerik Bölümleri (Yasal & KVKK & Hesap Silme) */
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        section.legal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+        }
+
+        section.legal-box h2 {
+            font-size: 1.45rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section.legal-box h2::before {
+            content: "";
+            width: 4px;
+            height: 22px;
+            background: var(--accent);
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .updated-date {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        section.legal-box h3 {
+            font-size: 1.05rem;
+            color: var(--accent);
+            margin: 20px 0 8px;
+        }
+
+        section.legal-box p, section.legal-box li {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        section.legal-box ul {
+            padding-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        /* Hesap Silme Özel Vurgu Kutusu (Google Play & App Store Zorunluluğu) */
+        .delete-highlight {
+            border-color: rgba(255, 165, 0, 0.35) !important;
+            background: linear-gradient(180deg, rgba(255, 165, 0, 0.04) 0%, var(--bg-card) 100%) !important;
+        }
+
+        .steps-list {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 14px 0;
+        }
+
+        .steps-list ol {
+            padding-left: 18px;
+            color: var(--text-primary);
+        }
+
+        .steps-list li {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .contact-pill {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 18px;
+            background: var(--accent);
+            color: #0B0B0E;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 0.92rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 600px) {
+            section.legal-box {
+                padding: 22px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-container">
+        <a href="#" class="logo">HUSH<span></span></a>
+        <nav>
+            <a href="#ozellikler">Uygulama</a>
+            <a href="#gizlilik">Gizlilik Politikası</a>
+            <a href="#kvkk">KVKK Aydınlatma</a>
+            <a href="#hesap-silme">Hesap Silme</a>
+            <a href="#iletisim">İletişim</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero" id="ozellikler">
+    <div class="badge">iOS & Android Mobil Uygulama</div>
+    <h1>Söyleyemediklerini <span>Özgürce</span> Paylaş.</h1>
+    <p>HUSH; yakın çevrendeki (5 km yarıçap) veya rastgele kullanıcıların anonim itiraflarını keşfedebileceğin, mesajların 12 saat içinde otomatik olarak silindiği yeni nesil sosyal platformdur.</p>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>5 km Yakındakiler Akışı</h3>
+            <p>Konum bazlı akış sayesinde bulunduğun bölgedeki itirafları kartları kaydırarak anında gör.</p>
+        </div>
+        <div class="feature-card">
+            <h3>12 Saatte Silinen Mesajlar</h3>
+            <p>Başlatılan özel sohbetlerdeki tüm mesajlar gönderildikten 12 saat sonra sunucularımızdan kalıcı olarak silinir.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Anonim veya İmzalı Paylaşım</h3>
+            <p>İster tamamen anonim kal, istersen kullanıcı adınla itiraf kartını imzalayarak paylaş.</p>
+        </div>
+    </div>
+</section>
+
+<main>
+    <!-- GİZLİLİK POLİTİKASI -->
+    <section class="legal-box" id="gizlilik">
+        <h2>Gizlilik Politikası (Privacy Policy)</h2>
+        <span class="updated-date">Son Güncelleme: Kasım 2026</span>
+        <p><strong>HUSH</strong> ("Uygulama"), kullanıcılarının gizliliğine ve veri güvenliğine en üst düzeyde önem verir. Bu Gizlilik Politikası, uygulamamızı kullandığınızda hangi verilerin toplandığını, nasıl kullanıldığını ve nasıl korunduğunu açıklar.</p>
+
+        <h3>1. Toplanan Veriler</h3>
+        <ul>
+            <li><strong>Hesap ve Kimlik Bilgileri:</strong> Google ile Giriş Yap (Google OAuth) veya Apple ile Giriş Yap (Sign in with Apple) aracılığıyla kayıt olduğunuzda yalnızca kimlik doğrulama amacıyla e-posta adresiniz ve temel profil tanımlayıcınız (UID) işlenir.</li>
+            <li><strong>Konum Bilgisi (İsteğe Bağlı):</strong> "Yakındakiler" akışında 5 km çevrenizdeki içerikleri gösterebilmek için cihazınızın yaklaşık konum verisi kullanılır. Kesin nokta koordinatlarınız diğer kullanıcılara asla gösterilmez.</li>
+            <li><strong>Kullanıcı İçerikleri:</strong> Oluşturduğunuz itiraf kartları, etkileşimler ve özel mesajlar.</li>
+        </ul>
+
+        <h3>2. Geçici Mesajlaşma ve Veri Saklama</h3>
+        <p>HUSH üzerindeki birebir sohbet mesajları, gönderildikleri andan itibaren <strong>12 saat</strong> boyunca saklanır ve süre dolduğunda veritabanımızdan otomatik ve geri döndürülemez biçimde silinir.</p>
+
+        <h3>3. Üçüncü Taraf Hizmet Sağlayıcılar</h3>
+        <p>Uygulama altyapısında kimlik doğrulama ve veritabanı barındırma için <strong>Supabase</strong>, oturum açma işlemleri için <strong>Google</strong> ve <strong>Apple</strong> servisleri kullanılmaktadır. Verileriniz reklam ağlarına satılmaz veya pazarlama amacıyla üçüncü taraflarla paylaşılmaz.</p>
+
+        <h3>4. Yaş Sınırı (18+)</h3>
+        <p>HUSH yalnızca 18 yaş ve üzeri bireylerin kullanımına yöneliktir. 18 yaşın altındaki bireylerden bilerek kişisel veri toplanmaz.</p>
+    </section>
+
+    <!-- KVKK AYDINLATMA METNİ -->
+    <section class="legal-box" id="kvkk">
+        <h2>KVKK Aydınlatma Metni</h2>
+        <span class="updated-date">6698 Sayılı Kişisel Verilerin Korunması Kanunu Kapsamında</span>
+        <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla HUSH geliştirici ekibi tarafından aşağıda açıklanan kapsamda işlenebilecektir.</p>
+
+        <h3>1. Kişisel Verilerin İşlenme Amacı</h3>
+        <p>Toplanan kişisel verileriniz (e-posta adresi, kullanıcı kimliği, yaklaşık konum bilgisi ve uygulama içi işlem kayıtları); üyelik hesabınızın oluşturulması, konum bazlı içerik akışının sağlanması, topluluk kurallarına aykırı içeriklerin denetlenmesi ve bilgi güvenliği süreçlerinin yürütülmesi amaçlarıyla işlenmektedir.</p>
+
+        <h3>2. Hukuki Sebep ve Aktarım</h3>
+        <p>Verileriniz KVKK'nın 5. maddesinde belirtilen <em>"bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması"</em> ve <em>"ilgili kişinin açık rızası"</em> hukuki sebeplerine dayanarak bulut altyapı sağlayıcımız (Supabase) üzerinden şifreli olarak saklanmaktadır.</p>
+
+        <h3>3. KVKK Madde 11 Kapsamındaki Haklarınız</h3>
+        <p>Kanun'un 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini isteme haklarına sahipsiniz. Taleplerinizi aşağıda yer alan iletişim kanalı üzerinden bize iletebilirsiniz.</p>
+    </section>
+
+    <!-- HESAP VE VERİ SİLME TALİMATLARI (GOOGLE PLAY & APP STORE ZORUNLU ALAN) -->
+    <section class="legal-box delete-highlight" id="hesap-silme">
+        <h2>Hesap ve Veri Silme Talimatları (Account Deletion)</h2>
+        <span class="updated-date">Google Play ve App Store Veri Güvenliği Politikası Gereği</span>
+        <p>HUSH kullanıcıları hesaplarını ve ilişkili tüm kişisel verilerini diledikleri zaman kalıcı olarak silebilirler.</p>
+
+        <div class="steps-list">
+            <strong>Uygulama İçinden Anında Silme:</strong>
+            <ol>
+                <li>HUSH uygulamasını açın ve alt menüden <strong>Profil</strong> sekmesine dokunun.</li>
+                <li>Sağ üst köşedeki <strong>Ayarlar</strong> ikonuna girin.</li>
+                <li>En altta bulunan <strong>"Hesabımı Kalıcı Olarak Sil"</strong> seçeneğine dokunun ve onaylayın.</li>
+            </ol>
+        </div>
+
+        <p><strong>Silinen Veriler:</strong> Hesap silme işlemi onaylandığında; kullanıcı profiliniz, e-posta adresiniz, oluşturduğunuz tüm itiraf kartları, aktif sohbet geçmişiniz ve destek kayıtlarınız sistemlerimizden <strong>anında ve kalıcı olarak</strong> silinir. Yasal yükümlülükler kapsamında tutulması zorunlu olmayan hiçbir veri saklanmaz.</p>
+        <p>Uygulamaya erişiminiz yoksa hesap silme talebinizi kayıtlı e-posta adresinizden <strong>destek@hushapp.com</strong> adresine göndererek de 48 saat içinde işlemin tamamlanmasını sağlayabilirsiniz.</p>
+    </section>
+
+    <!-- İLETİŞİM -->
+    <section class="legal-box" id="iletisim">
+        <h2>İletişim ve Destek</h2>
+        <p>Gizlilik politikamız, KVKK kapsamındaki haklarınız veya teknik destek talepleriniz için bizimle doğrudan iletişime geçebilirsiniz.</p>
+        <a href="mailto:destek@hushapp.com" class="contact-pill">destek@hushapp.com</a>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2026 HUSH. Tüm hakları saklıdır.</p>
+</footer>
+
+</body>
+</html>
